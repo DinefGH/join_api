@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'join_backend',
 ]
 
 MIDDLEWARE = [
@@ -132,3 +135,11 @@ MEDIA_ROOT = '/home/Efindi/join_api/media'
 MEDIA_URL = '/media/'
 STATIC_ROOT = '/home/Efindi/join_api/static'
 STATIC_URL = '/static/'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
