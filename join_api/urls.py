@@ -17,10 +17,10 @@ from django.contrib import admin
 from django.urls import path
 
 from join_backend.views import LoginView
-from join_backend.views import UserCreate
+from join_backend.views import UserRegistrationView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view()),
-    path('signup/', UserCreate.as_view(), name='user_signup'),
+    path('signup/', UserRegistrationView.as_view(), name='user-register'),
 ]
