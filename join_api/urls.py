@@ -21,6 +21,6 @@ from join_backend.views import UserRegistrationView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', LoginView.as_view()),
+    path('login/', LoginView.as_view(), name='login'),
     path('signup/', UserRegistrationView.as_view(), name='user-register'),
 ]

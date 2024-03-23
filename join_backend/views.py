@@ -6,21 +6,24 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import CustomUser
 from .serializers import UserRegistrationSerializer
+from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
 
-# Create your views here.
 
-class LoginView(ObtainAuthToken):
+User = get_user_model()
+
+class LoginView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user_id': user.pk,
-            'email': user.email
-        })
+        email = request.data.get("email")
+        password = request.data.get("password")
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            # Authentication was successful
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key}, status=status.HTTP_200_OK)
+        else:
+            # Authentication failed
+            return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
     
 
 class UserRegistrationView(APIView):
