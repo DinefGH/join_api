@@ -5,9 +5,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import CustomUser
-from .serializers import UserRegistrationSerializer
+from .serializers import UserRegistrationSerializer, UserDetailsSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
 
 
 User = get_user_model()
@@ -20,7 +21,9 @@ class LoginView(APIView):
         if user is not None:
             # Authentication was successful
             token, created = Token.objects.get_or_create(user=user)
-            return Response({"token": token.key}, status=status.HTTP_200_OK)
+            # Serialize the user data
+            user_data = UserDetailsSerializer(user).data
+            return Response({"token": token.key, "user": user_data}, status=status.HTTP_200_OK)
         else:
             # Authentication failed
             return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
@@ -33,3 +36,11 @@ class UserRegistrationView(APIView):
             serializer.save()
             return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class UserDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = UserDetailsSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
