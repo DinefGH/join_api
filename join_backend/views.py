@@ -9,6 +9,16 @@ from .serializers import UserRegistrationSerializer, UserDetailsSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView
+from .models import Contact
+from .forms import ContactForm
+
+
+
+
+
 
 
 User = get_user_model()
@@ -44,3 +54,14 @@ class UserDetailsView(APIView):
     def get(self, request, *args, **kwargs):
         serializer = UserDetailsSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class ContactCreateView(LoginRequiredMixin, CreateView):
+    model = Contact
+    form_class = ContactForm
+    template_name = 'contacts/add_contact.html'
+    success_url = reverse_lazy('contact_success')  # Adjust as necessary
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user  # Set the user
+        return super().form_valid(form)
