@@ -12,8 +12,16 @@ from rest_framework.permissions import IsAuthenticated
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView
-from .models import Contact
 from .forms import ContactForm
+from django.http import JsonResponse
+from django.views.decorators.http import require_safe
+from rest_framework.decorators import api_view
+from .models import Contact
+from .serializers import ContactSerializer
+from rest_framework import generics
+
+
+
 
 
 
@@ -65,3 +73,19 @@ class ContactCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user  # Set the user
         return super().form_valid(form)
+    
+
+@require_safe
+def set_csrf_token(request):
+    return JsonResponse({'detail': 'CSRF token set'})
+
+
+class ContactListCreateView(generics.ListCreateAPIView):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        print("Authorization Header:", self.request.headers.get('Authorization'))
+        # Automatically set the user field to the currently authenticated user
+        serializer.save(user=self.request.user)

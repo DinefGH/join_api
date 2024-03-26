@@ -4,9 +4,17 @@ from django.forms import TextInput, Textarea
 from .models import CustomUser, Contact
 from django.utils.translation import gettext_lazy as _
 
-admin.site.register(Contact)
 
-class CustomUserAdmin(UserAdmin):
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'phone', 'user')  # Columns to display in the admin list view
+    list_filter = ('user',)  # Filters by user in the sidebar
+    search_fields = ('name', 'email', 'phone')  # Fields to search by in the admin
+    ordering = ('user', 'name')  # Default ordering
+    raw_id_fields = ('user',)  # Use a lookup widget for user field
+
+admin.site.register(Contact, ContactAdmin)
+
+class CustomUserAdmin(admin.ModelAdmin):
     model = CustomUser
     list_display = ['email', 'name', 'is_active', 'is_staff']
     list_filter = ('is_staff', 'is_active',)

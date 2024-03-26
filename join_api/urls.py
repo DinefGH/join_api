@@ -15,16 +15,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
+from join_backend.views import set_csrf_token
 from join_backend.views import LoginView
-from join_backend.views import UserRegistrationView, UserDetailsView, ContactCreateView
+from join_backend.views import UserRegistrationView, UserDetailsView, ContactListCreateView
+
 
 
 urlpatterns = [
+    path('set-csrf/', set_csrf_token, name='set-csrf'),
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', UserRegistrationView.as_view(), name='user-register'),
     path('user/details/', UserDetailsView.as_view(), name='user-details'),
-    path('addcontact/',ContactCreateView.as_view(), name='add_contact'),
+    path('addcontact/',ContactListCreateView.as_view(), name='add_contact'),
 
 ]

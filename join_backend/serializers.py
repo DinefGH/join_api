@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from .models import Contact
 
 # Assuming get_user_model() returns your CustomUser model
 User = get_user_model()
@@ -41,3 +42,11 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'name', 'email')  # Specify the fields you want to include
         read_only_fields = ('id', 'name', 'email')
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    user = UserDetailsSerializer(read_only=True)
+
+    class Meta:
+        model = Contact
+        fields = ('user', 'name', 'email', 'phone')
