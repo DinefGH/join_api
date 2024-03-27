@@ -21,14 +21,6 @@ from .serializers import ContactSerializer
 from rest_framework import generics
 
 
-
-
-
-
-
-
-
-
 User = get_user_model()
 
 class LoginView(APIView):
@@ -84,6 +76,10 @@ class ContactListCreateView(generics.ListCreateAPIView):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Contact.objects.filter(user=user)
 
     def perform_create(self, serializer):
         print("Authorization Header:", self.request.headers.get('Authorization'))
