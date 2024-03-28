@@ -51,6 +51,7 @@ class Contact(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
     phone = models.CharField(max_length=20, null=False, blank=False)
+    color = models.CharField(max_length=7, null=False, blank=False, default='#FF7A00')
 
     def __str__(self):
         return self.name
