@@ -85,3 +85,25 @@ class ContactListCreateView(generics.ListCreateAPIView):
         print("Authorization Header:", self.request.headers.get('Authorization'))
         # Automatically set the user field to the currently authenticated user
         serializer.save(user=self.request.user)
+
+
+class ContactDetailView(APIView):
+    """
+    Retrieve a contact by id.
+    """
+    def get(self, request, id):
+        try:
+            contact = Contact.objects.get(pk=id)
+            serializer = ContactSerializer(contact)
+            return Response(serializer.data)
+        except Contact.DoesNotExist:
+            return Response({'error': 'Contact not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+    def delete(self, request, id):
+        try:
+            contact = Contact.objects.get(pk=id)
+            contact.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Contact.DoesNotExist:
+            return Response({'error': 'Contact not found'}, status=status.HTTP_404_NOT_FOUND)

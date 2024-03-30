@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'phone', 'color', 'user')  # Columns to display in the admin list view
+    list_display = ('name', 'email', 'phone', 'color', 'user', 'id')  # Columns to display in the admin list view
     list_filter = ('user',)  # Filters by user in the sidebar
     search_fields = ('name', 'email', 'phone')  # Fields to search by in the admin
     ordering = ('user', 'name')  # Default ordering

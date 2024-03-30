@@ -49,4 +49,4 @@ class ContactSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contact
-        fields = ('user', 'name', 'email', 'phone', 'color')
+        fields = ('id', 'user', 'name', 'email', 'phone', 'color')

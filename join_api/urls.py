@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from join_backend.views import set_csrf_token
 from join_backend.views import LoginView
-from join_backend.views import UserRegistrationView, UserDetailsView, ContactListCreateView
+from join_backend.views import UserRegistrationView, UserDetailsView, ContactListCreateView, ContactDetailView
 
 
 
@@ -28,5 +28,5 @@ urlpatterns = [
     path('signup/', UserRegistrationView.as_view(), name='user-register'),
     path('user/details/', UserDetailsView.as_view(), name='user-details'),
     path('addcontact/',ContactListCreateView.as_view(), name='add_contact'),
-
+    path('contact/<int:id>/', ContactDetailView.as_view(), name='contact_detail'),
 ]
