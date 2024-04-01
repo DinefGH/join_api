@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -107,3 +107,11 @@ class ContactDetailView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Contact.DoesNotExist:
             return Response({'error': 'Contact not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+    def put(self, request, id):
+        contact = get_object_or_404(Contact, pk=id)
+        serializer = ContactSerializer(contact, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
