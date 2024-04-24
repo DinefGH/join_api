@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.forms import TextInput, Textarea
-from .models import CustomUser, Contact
+from .models import CustomUser, Contact, Category, Task, Subtask
 from django.utils.translation import gettext_lazy as _
+
+
+
 
 
 class ContactAdmin(admin.ModelAdmin):
@@ -34,3 +37,25 @@ class CustomUserAdmin(admin.ModelAdmin):
     ordering = ('email',)
 
 admin.site.register(CustomUser, CustomUserAdmin)
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'color')  # Fields to be displayed in the admin list view
+    search_fields = ('name',)  # Fields to search by in the admin
+    list_filter = ('color', 'name',)  # Filters by color in the sidebar
+
+
+admin.site.register(Category, CategoryAdmin)
+
+
+
+class SubtaskInline(admin.TabularInline):
+    model = Subtask
+    extra = 1
+
+class TaskAdmin(admin.ModelAdmin):
+    inlines = [SubtaskInline,]
+    list_display = ('title', 'priority', 'due_date', 'category', 'creator', )
+    list_filter = ('priority', 'due_date', 'category', 'creator')
+    search_fields = ('title', 'description', 'creator')
+
+admin.site.register(Task, TaskAdmin)

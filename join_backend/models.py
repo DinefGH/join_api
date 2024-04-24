@@ -55,3 +55,33 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    color = models.CharField(max_length=7)  # Hex color codes
+
+    def __str__(self):
+        return self.name
+    
+
+class Task(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    priority = models.CharField(max_length=50, choices=[('Low', 'Low'), ('Medium', 'Medium'), ('Urgent', 'Urgent')])
+    due_date = models.DateField(null=True, blank=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
+    assigned_to = models.ManyToManyField('Contact', related_name='tasks')
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_tasks', null=True)
+
+    def __str__(self):
+        return self.title
+    
+
+class Subtask(models.Model):
+    task = models.ForeignKey(Task, related_name='subtasks', on_delete=models.CASCADE)
+    text = models.CharField(max_length=255)
+    completed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.text

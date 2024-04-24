@@ -17,7 +17,8 @@ from django.contrib import admin
 from django.urls import path
 from join_backend.views import set_csrf_token
 from join_backend.views import LoginView
-from join_backend.views import UserRegistrationView, UserDetailsView, ContactListCreateView, ContactDetailView
+from join_backend.views import UserRegistrationView, UserDetailsView, ContactListCreateView, ContactDetailView, CategoryListCreateAPIView, CategoryDetailAPIView, SubtaskListCreateAPIView, SubtaskDetailAPIView, TaskListCreateAPIView, TaskDetailAPIView
+
 
 
 
@@ -29,4 +30,10 @@ urlpatterns = [
     path('user/details/', UserDetailsView.as_view(), name='user-details'),
     path('addcontact/',ContactListCreateView.as_view(), name='add_contact'),
     path('contact/<int:id>/', ContactDetailView.as_view(), name='contact_detail'),
+    path('categories/', CategoryListCreateAPIView.as_view(), name='category-list'),
+    path('categories/<int:pk>/', CategoryDetailAPIView.as_view(), name='category-detail'),
+    path('subtasks/', SubtaskListCreateAPIView.as_view(), name='subtask-list'),
+    path('subtasks/<int:pk>/', SubtaskDetailAPIView.as_view(), name='subtask-detail'),
+    path('tasks/', TaskListCreateAPIView.as_view(), name='task-list'),
+    path('tasks/<int:pk>/', TaskDetailAPIView.as_view(), name='task-detail'),
 ]

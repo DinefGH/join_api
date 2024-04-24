@@ -19,6 +19,13 @@ from rest_framework.decorators import api_view
 from .models import Contact
 from .serializers import ContactSerializer
 from rest_framework import generics
+from .models import Category
+from .serializers import CategorySerializer
+from .models import Subtask
+from .serializers import SubtaskSerializer
+from .models import Task
+from .serializers import TaskSerializer
+
 
 
 User = get_user_model()
@@ -115,3 +122,139 @@ class ContactDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class CategoryListCreateAPIView(APIView):
+    def get(self, request):
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CategoryDetailAPIView(APIView):
+    def get_object(self, pk):
+        try:
+            return Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, pk):
+        category = self.get_object(pk)
+        if category is not Response:
+            serializer = CategorySerializer(category)
+            return Response(serializer.data)
+        return category
+
+    def put(self, request, pk):
+        category = self.get_object(pk)
+        if category is not Response:
+            serializer = CategorySerializer(category, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return category
+
+    def delete(self, request, pk):
+        category = self.get_object(pk)
+        if category is not Response:
+            category.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return category
+    
+
+class SubtaskListCreateAPIView(APIView):
+    def get(self, request):
+        subtasks = Subtask.objects.all()
+        serializer = SubtaskSerializer(subtasks, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = SubtaskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SubtaskDetailAPIView(APIView):
+    def get_object(self, pk):
+        try:
+            return Subtask.objects.get(pk=pk)
+        except Subtask.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, pk):
+        subtask = self.get_object(pk)
+        if not isinstance(subtask, Response):
+            serializer = SubtaskSerializer(subtask)
+            return Response(serializer.data)
+        return subtask
+
+    def put(self, request, pk):
+        subtask = self.get_object(pk)
+        if not isinstance(subtask, Response):
+            serializer = SubtaskSerializer(subtask, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return subtask
+
+    def delete(self, request, pk):
+        subtask = self.get_object(pk)
+        if not isinstance(subtask, Response):
+            subtask.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return subtask
+    
+
+
+class TaskListCreateAPIView(APIView):
+    def get(self, request):
+        tasks = Task.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = TaskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TaskDetailAPIView(APIView):
+    def get_object(self, pk):
+        try:
+            return Task.objects.get(pk=pk)
+        except Task.DoesNotExist:
+            return Response({'message': 'The task does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, pk):
+        task = self.get_object(pk)
+        if isinstance(task, Response):
+            return task
+        serializer = TaskSerializer(task)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        task = self.get_object(pk)
+        if isinstance(task, Response):
+            return task
+        serializer = TaskSerializer(task, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        task = self.get_object(pk)
+        if isinstance(task, Response):
+            return task
+        task.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
