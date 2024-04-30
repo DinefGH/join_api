@@ -66,8 +66,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class SubtaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subtask
-        fields = ['id', 'task', 'text', 'completed']
-
+        fields = ['id', 'text', 'completed']
 
 class TaskSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(
@@ -80,56 +79,44 @@ class TaskSerializer(serializers.ModelSerializer):
         queryset=Contact.objects.all(),
         required=False
     )
-    subtasks = SubtaskSerializer(many=True, read_only=True)
-    creator = serializers.StringRelatedField(read_only=True)  # Displays the string representation of the creator
+    subtasks = SubtaskSerializer(many=True, required=False)  # allow creating/updating subtasks
+    creator = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'priority', 'due_date', 'category', 'assigned_to', 'creator', 'subtasks']
 
     def create(self, validated_data):
-        # Pop subtasks data from validated data if it exists
         subtasks_data = validated_data.pop('subtasks', [])
-        # Pop assigned_to data to handle after the task creation
         assigned_to_data = validated_data.pop('assigned_to', [])
-
-        # Create the task instance
         task = Task.objects.create(**validated_data)
-
-        # Set the ManyToMany relation for 'assigned_to'
         task.assigned_to.set(assigned_to_data)
 
-        # Create subtasks if subtasks_data is provided
         for subtask_data in subtasks_data:
-            Subtask.objects.create(task=task, **subtask_data)
+            Subtask.objects.create(**subtask_data)
 
         return task
 
     def update(self, instance, validated_data):
-        # Pop subtasks data from validated data if it exists
-        subtasks_data = validated_data.pop('subtasks', None)
-        # Pop assigned_to data to handle after updating the instance
-        assigned_to_data = validated_data.pop('assigned_to', None)
+        subtasks_data = validated_data.pop('subtasks', [])
+        assigned_to_data = validated_data.pop('assigned_to', [])
 
-        # Update the instance
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Set the ManyToMany relation for 'assigned_to'
-        if assigned_to_data is not None:
-            instance.assigned_to.set(assigned_to_data)
+        instance.assigned_to.set(assigned_to_data)
 
-        # Update or create subtasks
-        if subtasks_data is not None:
-            for subtask_data in subtasks_data:
+        # Handle subtasks
+        existing_ids = [subtask.id for subtask in instance.subtasks.all()]
+        for subtask_data in subtasks_data:
                 subtask_id = subtask_data.get('id', None)
-                if subtask_id:
-                    subtask = Subtask.objects.get(id=subtask_id, task=instance)
+                if subtask_id and subtask_id in existing_ids:
+                    subtask = Subtask.objects.get(id=subtask_id)
                     for key, value in subtask_data.items():
                         setattr(subtask, key, value)
                     subtask.save()
                 else:
-                    Subtask.objects.create(task=instance, **subtask_data)
+                    Subtask.objects.create(**subtask_data)
 
         return instance

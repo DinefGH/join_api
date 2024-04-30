@@ -53,9 +53,16 @@ class SubtaskInline(admin.TabularInline):
     extra = 1
 
 class TaskAdmin(admin.ModelAdmin):
-    inlines = [SubtaskInline,]
     list_display = ('title', 'priority', 'due_date', 'category', 'creator', )
     list_filter = ('priority', 'due_date', 'category', 'creator')
     search_fields = ('title', 'description', 'creator')
 
 admin.site.register(Task, TaskAdmin)
+
+
+class SubtaskAdmin(admin.ModelAdmin):
+    list_display = ['text', 'completed']  # Adjust fields to display as needed
+    list_filter = ['completed']  # Filter options
+    search_fields = ['text']  # Search functionality based on text field
+
+admin.site.register(Subtask, SubtaskAdmin)
