@@ -66,6 +66,13 @@ class Category(models.Model):
     
 
 class Task(models.Model):
+    STATUS_CHOICES = [
+        ('todo', 'To Do'),
+        ('inProgress', 'In Progress'),
+        ('awaitFeedback', 'Await Feedback'),
+        ('done', 'Done')
+    ]
+
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     priority = models.CharField(max_length=50, choices=[('Low', 'Low'), ('Medium', 'Medium'), ('Urgent', 'Urgent')])
@@ -73,10 +80,11 @@ class Task(models.Model):
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
     assigned_to = models.ManyToManyField('Contact', related_name='tasks')
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_tasks', null=True)
+    subtasks = models.ManyToManyField('Subtask', related_name='tasks', blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='todo')  # Add status field
 
     def __str__(self):
         return self.title
-    
 
 class Subtask(models.Model):
     text = models.CharField(max_length=255)

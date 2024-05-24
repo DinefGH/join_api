@@ -224,8 +224,7 @@ class TaskListCreateAPIView(APIView):
 
     def post(self, request):
         # Log the incoming data
-        data = json.loads(request.body.decode('utf-8'))  # Ensure correct decoding from bytes to str if needed
-        print("Received data:", data)  # Log the raw data
+        print("Received data:", request.data)  # Log the raw data
 
         serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():

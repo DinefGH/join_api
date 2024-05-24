@@ -79,21 +79,22 @@ class TaskSerializer(serializers.ModelSerializer):
         queryset=Contact.objects.all(),
         required=False
     )
-    subtasks = SubtaskSerializer(many=True, required=False)  # allow creating/updating subtasks
+    subtasks = SubtaskSerializer(many=True, required=False)  # Allow creating/updating subtasks
     creator = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'priority', 'due_date', 'category', 'assigned_to', 'creator', 'subtasks']
+        fields = ['id', 'title', 'description', 'priority', 'due_date', 'category', 'assigned_to', 'creator', 'subtasks', 'status']
 
     def create(self, validated_data):
         subtasks_data = validated_data.pop('subtasks', [])
         assigned_to_data = validated_data.pop('assigned_to', [])
-        task = Task.objects.create(**validated_data)
+        task = Task.objects.create(**validated_data)  # Create task without setting status separately
         task.assigned_to.set(assigned_to_data)
 
         for subtask_data in subtasks_data:
-            Subtask.objects.create(**subtask_data)
+            subtask = Subtask.objects.create(**subtask_data)
+            task.subtasks.add(subtask)
 
         return task
 
@@ -110,13 +111,14 @@ class TaskSerializer(serializers.ModelSerializer):
         # Handle subtasks
         existing_ids = [subtask.id for subtask in instance.subtasks.all()]
         for subtask_data in subtasks_data:
-                subtask_id = subtask_data.get('id', None)
-                if subtask_id and subtask_id in existing_ids:
-                    subtask = Subtask.objects.get(id=subtask_id)
-                    for key, value in subtask_data.items():
-                        setattr(subtask, key, value)
-                    subtask.save()
-                else:
-                    Subtask.objects.create(**subtask_data)
+            subtask_id = subtask_data.get('id', None)
+            if subtask_id and subtask_id in existing_ids:
+                subtask = Subtask.objects.get(id=subtask_id)
+                for key, value in subtask_data.items():
+                    setattr(subtask, key, value)
+                subtask.save()
+            else:
+                new_subtask = Subtask.objects.create(**subtask_data)
+                instance.subtasks.add(new_subtask)
 
         return instance

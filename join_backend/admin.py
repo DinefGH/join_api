@@ -53,9 +53,9 @@ class SubtaskInline(admin.TabularInline):
     extra = 1
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('title', 'priority', 'due_date', 'category', 'creator', )
-    list_filter = ('priority', 'due_date', 'category', 'creator')
-    search_fields = ('title', 'description', 'creator')
+    list_display = ('title', 'priority', 'due_date', 'category', 'creator', 'status')
+    list_filter = ('priority', 'due_date', 'category', 'creator', 'status')
+    search_fields = ('title', 'description', 'creator', 'status')
 
 admin.site.register(Task, TaskAdmin)
 
