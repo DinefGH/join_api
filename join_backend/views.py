@@ -250,9 +250,31 @@ class TaskDetailAPIView(APIView):
         task = self.get_object(pk)
         if isinstance(task, Response):
             return task
-        serializer = TaskSerializer(task, data=request.data)
+        
+        data = request.data
+        subtasks_data = data.pop('subtasks', [])
+        serializer = TaskSerializer(task, data=data, partial=True)
+        
         if serializer.is_valid():
             serializer.save()
+
+            # Handle subtasks separately
+            existing_subtasks = {subtask.id: subtask for subtask in task.subtasks.all()}
+            new_subtasks = []
+
+            for subtask_data in subtasks_data:
+                if 'id' in subtask_data and subtask_data['id'] in existing_subtasks:
+                    subtask = existing_subtasks[subtask_data['id']]
+                    subtask.text = subtask_data.get('text', subtask.text)
+                    subtask.completed = subtask_data.get('completed', subtask.completed)
+                    subtask.save()
+                else:
+                    new_subtask = Subtask.objects.create(**subtask_data)
+                    new_subtasks.append(new_subtask)
+            
+            task.subtasks.set(list(existing_subtasks.values()) + new_subtasks)
+            task.save()
+
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
