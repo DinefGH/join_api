@@ -79,8 +79,8 @@ class TaskSerializer(serializers.ModelSerializer):
         queryset=Contact.objects.all(),
         required=False
     )
-    subtasks = SubtaskSerializer(many=True, required=False)  # Allow creating/updating subtasks
-    creator = serializers.StringRelatedField(source='creator.name', read_only=True)
+    subtasks = SubtaskSerializer(many=True, required=False)
+    creator = UserDetailsSerializer(read_only=True)
 
     class Meta:
         model = Task
@@ -89,7 +89,7 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         subtasks_data = validated_data.pop('subtasks', [])
         assigned_to_data = validated_data.pop('assigned_to', [])
-        task = Task.objects.create(**validated_data)  # Create task without setting status separately
+        task = Task.objects.create(**validated_data)
         task.assigned_to.set(assigned_to_data)
 
         for subtask_data in subtasks_data:
@@ -108,17 +108,24 @@ class TaskSerializer(serializers.ModelSerializer):
 
         instance.assigned_to.set(assigned_to_data)
 
-        # Handle subtasks
-        existing_ids = [subtask.id for subtask in instance.subtasks.all()]
+        current_subtasks = {subtask.id: subtask for subtask in instance.subtasks.all()}
+        updated_subtasks = []
+
         for subtask_data in subtasks_data:
-            subtask_id = subtask_data.get('id', None)
-            if subtask_id and subtask_id in existing_ids:
-                subtask = Subtask.objects.get(id=subtask_id)
+            subtask_id = subtask_data.get('id')
+            if subtask_id and subtask_id in current_subtasks:
+                subtask = current_subtasks.pop(subtask_id)
                 for key, value in subtask_data.items():
                     setattr(subtask, key, value)
                 subtask.save()
+                updated_subtasks.append(subtask)
             else:
                 new_subtask = Subtask.objects.create(**subtask_data)
-                instance.subtasks.add(new_subtask)
+                updated_subtasks.append(new_subtask)
+
+        for subtask in current_subtasks.values():
+            instance.subtasks.remove(subtask)
+
+        instance.subtasks.set(updated_subtasks)
 
         return instance

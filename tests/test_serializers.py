@@ -167,7 +167,7 @@ class TaskSerializerTest(TestCase):
         self.assertEqual(task.title, 'Test task')
         self.assertEqual(task.description, 'Test description')
         self.assertEqual(task.priority, 'Low')
-        self.assertEqual(task.due_date, datetime.date(2024, 7, 31))  # Convert string to date
+        self.assertEqual(task.due_date, datetime.date(2024, 7, 31))
         self.assertEqual(task.category, self.category)
         self.assertIn(self.contact, task.assigned_to.all())
         self.assertEqual(task.subtasks.first().text, 'Test subtask')
@@ -196,7 +196,7 @@ class TaskSerializerTest(TestCase):
         self.assertIn(self.contact.id, data['assigned_to'])
         self.assertEqual(data['subtasks'][0]['text'], 'Initial subtask')
         self.assertFalse(data['subtasks'][0]['completed'])
-        self.assertEqual(data['creator'], self.user.name)  # Corrected comparison
+        self.assertEqual(data['creator']['name'], self.user.name)
 
     def test_task_update(self):
         task = Task.objects.create(
@@ -223,12 +223,12 @@ class TaskSerializerTest(TestCase):
         }
 
         serializer = TaskSerializer(task, data=update_data)
-        self.assertTrue(serializer.is_valid(), msg=serializer.errors)  # Print serializer errors
+        self.assertTrue(serializer.is_valid(), msg=serializer.errors)
         updated_task = serializer.save()
         self.assertEqual(updated_task.title, 'Updated task')
         self.assertEqual(updated_task.description, 'Updated description')
         self.assertEqual(updated_task.priority, 'Medium')
-        self.assertEqual(updated_task.due_date, datetime.date(2024, 8, 15))  # Convert string to date
+        self.assertEqual(updated_task.due_date, datetime.date(2024, 8, 15))
         self.assertEqual(updated_task.category, self.category)
         self.assertIn(self.contact, updated_task.assigned_to.all())
         self.assertEqual(updated_task.subtasks.first().text, 'Updated subtask')
