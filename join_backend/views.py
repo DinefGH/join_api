@@ -1,4 +1,4 @@
-import json
+import json, logging
 from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -230,7 +230,12 @@ class TaskListCreateAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # Log the serializer errors
+            print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+logger = logging.getLogger(__name__)
 
 class TaskDetailAPIView(APIView):
     def get_object(self, pk):
@@ -250,32 +255,44 @@ class TaskDetailAPIView(APIView):
         task = self.get_object(pk)
         if isinstance(task, Response):
             return task
-        
-        data = request.data
-        subtasks_data = data.pop('subtasks', [])
-        serializer = TaskSerializer(task, data=data, partial=True)
-        
+
+        serializer = TaskSerializer(task, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            updated_task = serializer.save()
 
-            # Handle subtasks separately
-            existing_subtasks = {subtask.id: subtask for subtask in task.subtasks.all()}
-            new_subtasks = []
+            # Handle subtasks
+            subtasks_data = request.data.get('subtasks', [])
+            existing_subtask_ids = set(task.subtasks.values_list('id', flat=True))
 
+            print(f"Existing subtask IDs: {existing_subtask_ids}")
+            print(f"Received subtasks data: {subtasks_data}")
+
+            incoming_subtask_ids = {subtask_data.get('id') for subtask_data in subtasks_data if subtask_data.get('id')}
+            print(f"Incoming subtask IDs: {incoming_subtask_ids}")
+
+            # Update existing subtasks
             for subtask_data in subtasks_data:
-                if 'id' in subtask_data and subtask_data['id'] in existing_subtasks:
-                    subtask = existing_subtasks[subtask_data['id']]
-                    subtask.text = subtask_data.get('text', subtask.text)
-                    subtask.completed = subtask_data.get('completed', subtask.completed)
-                    subtask.save()
-                else:
+                subtask_id = subtask_data.get('id')
+                if subtask_id in existing_subtask_ids:
+                    # Update existing subtask
+                    Subtask.objects.filter(id=subtask_id).update(**subtask_data)
+                    print(f"Updated subtask ID: {subtask_id}")
+                elif subtask_id is None:
+                    # Create new subtask and associate with the task
                     new_subtask = Subtask.objects.create(**subtask_data)
-                    new_subtasks.append(new_subtask)
-            
-            task.subtasks.set(list(existing_subtasks.values()) + new_subtasks)
-            task.save()
+                    updated_task.subtasks.add(new_subtask)
+                    print(f"Created new subtask with ID: {new_subtask.id}")
+                else:
+                    print(f"Subtask ID {subtask_id} not found in existing subtasks")
+                    return Response({'message': f'Subtask ID {subtask_id} not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Remove subtasks that are not in the request data
+            for subtask_id in existing_subtask_ids - incoming_subtask_ids:
+                Subtask.objects.filter(id=subtask_id).delete()
+                print(f"Removed subtask ID: {subtask_id}")
 
             return Response(serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):

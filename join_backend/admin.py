@@ -61,7 +61,7 @@ admin.site.register(Task, TaskAdmin)
 
 
 class SubtaskAdmin(admin.ModelAdmin):
-    list_display = ['text', 'completed']  # Adjust fields to display as needed
+    list_display = ['text', 'completed', 'id']  # Adjust fields to display as needed
     list_filter = ['completed']  # Filter options
     search_fields = ['text']  # Search functionality based on text field
 

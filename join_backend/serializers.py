@@ -80,7 +80,7 @@ class TaskSerializer(serializers.ModelSerializer):
         required=False
     )
     subtasks = SubtaskSerializer(many=True, required=False)  # Allow creating/updating subtasks
-    creator = serializers.StringRelatedField(read_only=True)
+    creator = serializers.StringRelatedField(source='creator.name', read_only=True)
 
     class Meta:
         model = Task
