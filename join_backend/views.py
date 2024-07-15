@@ -218,7 +218,7 @@ class SubtaskDetailAPIView(APIView):
 
 class TaskListCreateAPIView(APIView):
     def get(self, request):
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(creator=request.user)
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
 
@@ -226,7 +226,7 @@ class TaskListCreateAPIView(APIView):
         # Log the incoming data
         print("Received data:", request.data)  # Log the raw data
 
-        serializer = TaskSerializer(data=request.data)
+        serializer = TaskSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -256,7 +256,7 @@ class TaskDetailAPIView(APIView):
         if isinstance(task, Response):
             return task
 
-        serializer = TaskSerializer(task, data=request.data, partial=True)
+        serializer = TaskSerializer(task, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             updated_task = serializer.save()
 

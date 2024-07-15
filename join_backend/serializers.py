@@ -87,6 +87,9 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'priority', 'due_date', 'category', 'assigned_to', 'creator', 'subtasks', 'status']
 
     def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['creator'] = request.user
+
         subtasks_data = validated_data.pop('subtasks', [])
         assigned_to_data = validated_data.pop('assigned_to', [])
         task = Task.objects.create(**validated_data)
