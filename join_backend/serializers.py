@@ -68,6 +68,15 @@ class SubtaskSerializer(serializers.ModelSerializer):
         model = Subtask
         fields = ['id', 'text', 'completed']
 
+    def create(self, validated_data):
+        return Subtask.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.text = validated_data.get('text', instance.text)
+        instance.completed = validated_data.get('completed', instance.completed)
+        instance.save()
+        return instance
+
 class TaskSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
@@ -112,23 +121,32 @@ class TaskSerializer(serializers.ModelSerializer):
         instance.assigned_to.set(assigned_to_data)
 
         current_subtasks = {subtask.id: subtask for subtask in instance.subtasks.all()}
+        print(f"Existing subtask IDs: {current_subtasks.keys()}")
         updated_subtasks = []
+        incoming_subtask_ids = set()
 
         for subtask_data in subtasks_data:
             subtask_id = subtask_data.get('id')
+            if subtask_id:
+                incoming_subtask_ids.add(subtask_id)
+                print(f"Processing subtask ID: {subtask_id}")
             if subtask_id and subtask_id in current_subtasks:
-                subtask = current_subtasks.pop(subtask_id)
+                subtask = current_subtasks[subtask_id]
                 for key, value in subtask_data.items():
                     setattr(subtask, key, value)
                 subtask.save()
                 updated_subtasks.append(subtask)
+                print(f"Updated subtask: {subtask_id}")
+            elif subtask_id:
+                print(f"Subtask ID {subtask_id} not found in existing subtasks: {current_subtasks.keys()}")
+                raise serializers.ValidationError(f"Subtask ID {subtask_id} not found in current subtasks")
             else:
-                new_subtask = Subtask.objects.create(**subtask_data)
-                updated_subtasks.append(new_subtask)
+                # Skip creating new subtask
+                continue
 
-        for subtask in current_subtasks.values():
-            instance.subtasks.remove(subtask)
+        print(f"Received subtasks data: {subtasks_data}")
+        print(f"Incoming subtask IDs: {incoming_subtask_ids}")
 
-        instance.subtasks.set(updated_subtasks)
+        instance.subtasks.add(*updated_subtasks)
 
         return instance
