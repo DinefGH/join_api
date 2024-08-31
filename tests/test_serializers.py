@@ -10,15 +10,15 @@ from rest_framework.test import APIRequestFactory
 User = get_user_model()
 
 
-"""
+
+
+class UserRegistrationSerializerTest(TestCase):
+    """
 UserRegistrationSerializerTest:
 
 Tests the UserRegistrationSerializer, ensuring valid user registration, verifying that the passwords match, 
 and handling errors for missing or incorrect fields during registration.
 """
-
-class UserRegistrationSerializerTest(TestCase):
-
     def test_valid_registration(self):
         data = {
             'name': 'John Doe',
@@ -57,15 +57,15 @@ class UserRegistrationSerializerTest(TestCase):
         self.assertIn('name', serializer.errors)
 
 
-"""
+
+
+class UserDetailsSerializerTest(TestCase):
+    """
 UserDetailsSerializerTest:
 
 Tests the UserDetailsSerializer, verifying that it correctly serializes user details, 
 including name, email, and id, ensuring the data is accurately reflected in the serialized output.
 """
-
-class UserDetailsSerializerTest(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(name='John Doe', email='john.doe@example.com', password='password123')
 
@@ -77,15 +77,15 @@ class UserDetailsSerializerTest(TestCase):
         self.assertIn('id', data)
 
 
-"""
+
+class ContactSerializerTest(TestCase):
+    """
 ContactSerializerTest:
 
 Tests the ContactSerializer, ensuring that contacts are created with valid data and correctly serialized. 
 It also verifies the relationship between the contact and the user, 
 ensuring that user details are included in the serialized contact data.
 """
-class ContactSerializerTest(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(name='John Doe', email='john.doe@example.com', password='password123')
         self.contact_data = {
@@ -119,14 +119,14 @@ class ContactSerializerTest(TestCase):
         self.assertEqual(data['user']['email'], 'john.doe@example.com')
 
 
-"""
+
+class CategorySerializerTest(TestCase):
+    """
 CategorySerializerTest:
 
 Tests the CategorySerializer, ensuring that categories are created with valid data and correctly serialized, 
 verifying that both name and color fields are accurately reflected in the serialized output.
 """
-class CategorySerializerTest(TestCase):
-
     def setUp(self):
         self.category_data = {
             'name': 'Work',
@@ -148,15 +148,15 @@ class CategorySerializerTest(TestCase):
         self.assertEqual(data['color'], '#FF0000')
 
 
-"""
+
+
+class SubtaskSerializerTest(TestCase):
+    """
 SubtaskSerializerTest:
 
 Tests the SubtaskSerializer, ensuring that subtasks are created with valid data and correctly serialized, 
 verifying the text and completed status of the subtask in both creation and serialization scenarios.
 """
-
-class SubtaskSerializerTest(TestCase):
-
     def setUp(self):
         self.subtask_data = {
             'text': 'Test subtask',
@@ -178,16 +178,16 @@ class SubtaskSerializerTest(TestCase):
         self.assertEqual(data['completed'], False)
 
 
-"""
+
+
+class TaskSerializerTest(TestCase):
+    """
 TaskSerializerTest:
 
 Tests the TaskSerializer, ensuring that tasks are created and updated with valid data, 
 correctly associating categories, contacts, and subtasks. It verifies the relationships, including the creator of the task, 
 and checks that all task attributes are properly handled during serialization and updates.
 """
-
-class TaskSerializerTest(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(name='John Doe', email='john.doe@example.com', password='password123')
         self.category = Category.objects.create(name='Work', color='#FF0000')

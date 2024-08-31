@@ -10,14 +10,15 @@ from .models import Task
 # Assuming get_user_model() returns your CustomUser model
 User = get_user_model()
 
-"""
-UserRegistrationSerializer:
 
-A serializer for registering new users, requiring name, email, password, and confirmPassword fields. 
-It includes validation to ensure the password and confirmPassword match before creating a new user.
-"""
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    **UserRegistrationSerializer**
+
+    A serializer for registering new users, requiring `name`, `email`, `password`, and `confirmPassword` fields.
+    It includes validation to ensure the `password` and `confirmPassword` match before creating a new user.
+    """
     password = serializers.CharField(write_only=True)
     confirmPassword = serializers.CharField(write_only=True)
 
@@ -49,53 +50,57 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
     
     
-"""
-UserDetailsSerializer:
 
-A serializer for displaying user details, specifically id, name, and email. 
-All fields are read-only, making this serializer suitable for retrieving user information without modification.
-"""
 
 class UserDetailsSerializer(serializers.ModelSerializer):
+    """
+    **UserDetailsSerializer**
+
+    A serializer for displaying user details, specifically `id`, `name`, and `email`.
+    All fields are read-only, making this serializer suitable for retrieving user information without modification.
+    """
     class Meta:
         model = User
         fields = ('id', 'name', 'email')  # Specify the fields you want to include
         read_only_fields = ('id', 'name', 'email')
 
-"""
-ContactSerializer:
 
-A serializer for managing Contact objects, including fields like id, user, name, email, phone, and color. 
-It embeds user details using the UserDetailsSerializer and treats the user field as read-only.
-"""
 
 class ContactSerializer(serializers.ModelSerializer):
+    """
+    **ContactSerializer**
+
+    A serializer for managing `Contact` objects, including fields like `id`, `user`, `name`, `email`, `phone`, and `color`.
+    It embeds user details using the `UserDetailsSerializer` and treats the `user` field as read-only.
+    """
     user = UserDetailsSerializer(read_only=True)
 
     class Meta:
         model = Contact
         fields = ('id', 'user', 'name', 'email', 'phone', 'color')
 
-"""
-CategorySerializer:
 
-A serializer for handling Category objects, including the id, name, and color fields, 
-facilitating the categorization of tasks.
-"""
 
 class CategorySerializer(serializers.ModelSerializer):
+    """
+    **CategorySerializer**
+
+    A serializer for handling `Category` objects, including the `id`, `name`, and `color` fields,
+    facilitating the categorization of tasks.
+    """
     class Meta:
         model = Category
         fields = ['id', 'name', 'color']
 
-"""
-SubtaskSerializer:
 
-A serializer for creating and updating Subtask objects, which include id, text, and completed fields. 
-The create and update methods are customized to handle these operations efficiently.
-"""
 
 class SubtaskSerializer(serializers.ModelSerializer):
+    """
+    **SubtaskSerializer**
+
+    A serializer for creating and updating `Subtask` objects, which include `id`, `text`, and `completed` fields.
+    The `create` and `update` methods are customized to handle these operations efficiently.
+    """
     class Meta:
         model = Subtask
         fields = ['id', 'text', 'completed']
@@ -109,15 +114,27 @@ class SubtaskSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-"""
-TaskSerializer:
 
-A serializer for managing Task objects, including fields like id, title, description, priority, due_date, category, assigned_to, creator, subtasks, and status. 
-It handles nested serialization for subtasks and relationships with contacts and categories. 
-The create and update methods are customized to manage related data, such as subtasks and assigned contacts.
-"""
 
 class TaskSerializer(serializers.ModelSerializer):
+    """
+    **TaskSerializer**
+
+    A serializer for managing `Task` objects, including fields like:
+    - `id`
+    - `title`
+    - `description`
+    - `priority`
+    - `due_date`
+    - `category`
+    - `assigned_to`
+    - `creator`
+    - `subtasks`
+    - `status`
+
+    It handles nested serialization for `subtasks` and relationships with `contacts` and `categories`.
+    The `create` and `update` methods are customized to manage related data, such as `subtasks` and assigned contacts.
+    """
     category = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
         allow_null=True,

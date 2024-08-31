@@ -6,7 +6,6 @@ from join_backend.views import UserRegistrationView, UserDetailsView, ContactLis
 
 
 
-
 """
 'set-csrf/' - Sets the CSRF token.
 """
@@ -47,9 +46,9 @@ from join_backend.views import UserRegistrationView, UserDetailsView, ContactLis
 'tasks/<int:pk>/' - Retrieves or modifies a specific task.
 """
 
-
 urlpatterns = [
-
+    
+    path('set-csrf/', set_csrf_token, name='set-csrf'),
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', UserRegistrationView.as_view(), name='user-register'),

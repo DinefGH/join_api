@@ -3,14 +3,15 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 
-"""
+
+
+class CustomUserManager(BaseUserManager):
+    """
 CustomUserManager:
 
 A custom manager for the CustomUser model, providing methods to create regular users and superusers with email, name, and password, 
 ensuring that all necessary fields are set and validated.
 """
-
-class CustomUserManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
         """
         Creates and saves a regular user with the given email, name, and password.
@@ -38,14 +39,15 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, name, password, **extra_fields)
 
 
-"""
+
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    """
 CustomUser:
 
 A custom user model that extends AbstractBaseUser and PermissionsMixin, using email as the unique identifier instead of a username. 
 It includes fields for name, email, and user status, with CustomUserManager handling user creation.
 """
-
-class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255)
     # Additional fields can be added here
@@ -62,14 +64,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.email
     
 
-"""
+
+
+class Contact(models.Model):
+    """
 Contact:
 
 A model representing a contact, linked to a user, with fields for name, email, phone, and a color attribute (stored as a hex code). 
 Each contact is associated with a specific user and can be used for tasks.
 """
-
-class Contact(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255, null=False, blank=False)
     email = models.EmailField(null=False, blank=False)
@@ -80,14 +83,15 @@ class Contact(models.Model):
         return self.name
     
 
-"""
+
+
+class Category(models.Model):
+    """
 Category:
 
 A model for categorizing tasks, with unique name and color fields, where the color is represented by a hex code. 
 Categories help organize tasks into distinct groups.
 """
-
-class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
     color = models.CharField(max_length=7)  # Hex color codes
 
@@ -95,14 +99,15 @@ class Category(models.Model):
         return self.name
     
 
-"""
+
+
+class Task(models.Model):
+    """
 Task:
 
 A model for tasks, including fields for title, description, priority, due date, and status. 
 Tasks are linked to categories and contacts (assignees) and can have multiple subtasks. The status field tracks the task's progress.
 """
-
-class Task(models.Model):
     STATUS_CHOICES = [
         ('todo', 'To Do'),
         ('inProgress', 'In Progress'),
@@ -124,14 +129,15 @@ class Task(models.Model):
         return self.title
 
 
-"""
+
+
+class Subtask(models.Model):
+    """
 Subtask:
 
 A model representing a subtask, with a text description and a completed status. 
 Subtasks are associated with tasks and help break down larger tasks into smaller, manageable components.
 """
-
-class Subtask(models.Model):
     text = models.CharField(max_length=255)
     completed = models.BooleanField(default=False)
 

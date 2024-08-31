@@ -3,7 +3,11 @@ from django.urls import reverse, resolve
 from join_backend.views import set_csrf_token, LoginView, UserRegistrationView, UserDetailsView, ContactListCreateView, ContactDetailView, CategoryListCreateAPIView, CategoryDetailAPIView, SubtaskListCreateAPIView, SubtaskDetailAPIView, TaskListCreateAPIView, TaskDetailAPIView
 
 
-"""
+
+
+
+class TestUrls(TestCase):
+    """
 TestUrls
 Tests the URL routing configuration of the application, ensuring that each named URL correctly resolves to its intended view function or class.
 1. test_set_csrf_url
@@ -31,10 +35,6 @@ Verifies that the task-list URL resolves to the TaskListCreateAPIView class.
 12. test_task_detail_url
 Verifies that the task-detail URL resolves to the TaskDetailAPIView class, correctly passing a task ID as an argument.
 """
-
-
-class TestUrls(TestCase):
-
     def test_set_csrf_url(self):
         url = reverse('set-csrf')
         self.assertEqual(resolve(url).func, set_csrf_token)
