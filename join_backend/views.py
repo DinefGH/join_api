@@ -31,6 +31,14 @@ from .serializers import TaskSerializer
 
 User = get_user_model()
 
+
+"""
+LoginView:
+
+Handles user authentication by verifying credentials (email and password) 
+and returning an authentication token along with user details if successful, or an error message if not.
+"""
+
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
@@ -47,6 +55,13 @@ class LoginView(APIView):
             return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
     
 
+"""
+UserRegistrationView:
+
+Manages user registration by validating the submitted data and creating a new user in the system if the data is valid, 
+returning a success message upon successful registration.
+"""
+
 class UserRegistrationView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -56,6 +71,13 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+"""
+UserDetailsView:
+
+Provides details of the currently authenticated user, accessible only to authenticated users, 
+by serializing the user’s data and returning it in the response.
+"""
+
 class UserDetailsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -63,6 +85,13 @@ class UserDetailsView(APIView):
         serializer = UserDetailsSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+
+"""
+ContactCreateView:
+
+A view for creating new contacts, accessible only to logged-in users. 
+It associates the new contact with the currently authenticated user and redirects to a success page upon successful form submission.
+"""
 
 class ContactCreateView(LoginRequiredMixin, CreateView):
     model = Contact
@@ -75,10 +104,24 @@ class ContactCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
     
 
+"""
+set_csrf_token:
+
+A view that sets the CSRF token for the current session, 
+responding with a JSON message to indicate that the token has been set.
+"""
+
 @require_safe
 def set_csrf_token(request):
     return JsonResponse({'detail': 'CSRF token set'})
 
+
+"""
+ContactListCreateView:
+
+Handles the retrieval and creation of Contact objects for the currently authenticated user. 
+Filters the contacts based on the user and ensures that new contacts are associated with the user making the request.
+"""
 
 class ContactListCreateView(generics.ListCreateAPIView):
     queryset = Contact.objects.all()
@@ -94,6 +137,13 @@ class ContactListCreateView(generics.ListCreateAPIView):
         # Automatically set the user field to the currently authenticated user
         serializer.save(user=self.request.user)
 
+
+"""
+ContactDetailView:
+
+Provides detailed view, update, and deletion capabilities for individual contacts based on their ID. 
+Handles errors such as when a contact is not found, ensuring appropriate responses are returned.
+"""
 
 class ContactDetailView(APIView):
     """
@@ -125,6 +175,13 @@ class ContactDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+"""
+CategoryListCreateAPIView:
+
+Manages the listing of all categories and the creation of new categories. 
+It handles the serialization and validation of category data for GET and POST requests.
+"""
+
 class CategoryListCreateAPIView(APIView):
     def get(self, request):
         categories = Category.objects.all()
@@ -137,6 +194,14 @@ class CategoryListCreateAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+"""
+CategoryDetailAPIView:
+
+Handles retrieval, updating, and deletion of specific categories based on their ID. 
+Ensures that appropriate responses are returned for successful operations or when a category is not found.
+"""
 
 class CategoryDetailAPIView(APIView):
     def get_object(self, pk):
@@ -170,6 +235,13 @@ class CategoryDetailAPIView(APIView):
         return category
     
 
+"""
+SubtaskListCreateAPIView:
+
+Manages the listing and creation of subtasks. 
+Allows for the retrieval of all subtasks and the creation of new ones, validating and serializing the data as needed.
+"""
+
 class SubtaskListCreateAPIView(APIView):
     def get(self, request):
         subtasks = Subtask.objects.all()
@@ -182,6 +254,13 @@ class SubtaskListCreateAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+"""
+SubtaskDetailAPIView:
+
+Handles the retrieval, updating, and deletion of specific subtasks based on their ID. 
+Ensures correct handling of requests, including returning errors if the subtask is not found.
+"""
 
 class SubtaskDetailAPIView(APIView):
     def get_object(self, pk):
@@ -215,6 +294,13 @@ class SubtaskDetailAPIView(APIView):
         return subtask
     
 
+"""
+TaskListCreateAPIView:
+
+Manages the listing and creation of tasks associated with the currently authenticated user. 
+Handles task creation with nested subtasks and relationships to contacts and categories.
+"""
+
 
 class TaskListCreateAPIView(APIView):
     def get(self, request):
@@ -236,6 +322,13 @@ class TaskListCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 logger = logging.getLogger(__name__)
+
+"""
+TaskDetailAPIView:
+
+Provides detailed view, update, and deletion capabilities for individual tasks based on their ID. 
+Handles complex updates, including managing subtasks and ensuring data integrity during task modifications.
+"""
 
 class TaskDetailAPIView(APIView):
     def get_object(self, pk):

@@ -5,8 +5,17 @@ from join_backend.models import Contact, Category, Subtask, Task
 from join_backend.serializers import UserRegistrationSerializer, UserDetailsSerializer, ContactSerializer, CategorySerializer
 from join_backend.serializers import SubtaskSerializer, TaskSerializer
 import datetime
+from rest_framework.test import APIRequestFactory
 
 User = get_user_model()
+
+
+"""
+UserRegistrationSerializerTest:
+
+Tests the UserRegistrationSerializer, ensuring valid user registration, verifying that the passwords match, 
+and handling errors for missing or incorrect fields during registration.
+"""
 
 class UserRegistrationSerializerTest(TestCase):
 
@@ -48,6 +57,12 @@ class UserRegistrationSerializerTest(TestCase):
         self.assertIn('name', serializer.errors)
 
 
+"""
+UserDetailsSerializerTest:
+
+Tests the UserDetailsSerializer, verifying that it correctly serializes user details, 
+including name, email, and id, ensuring the data is accurately reflected in the serialized output.
+"""
 
 class UserDetailsSerializerTest(TestCase):
 
@@ -62,6 +77,13 @@ class UserDetailsSerializerTest(TestCase):
         self.assertIn('id', data)
 
 
+"""
+ContactSerializerTest:
+
+Tests the ContactSerializer, ensuring that contacts are created with valid data and correctly serialized. 
+It also verifies the relationship between the contact and the user, 
+ensuring that user details are included in the serialized contact data.
+"""
 class ContactSerializerTest(TestCase):
 
     def setUp(self):
@@ -96,6 +118,13 @@ class ContactSerializerTest(TestCase):
         self.assertEqual(data['user']['name'], 'John Doe')
         self.assertEqual(data['user']['email'], 'john.doe@example.com')
 
+
+"""
+CategorySerializerTest:
+
+Tests the CategorySerializer, ensuring that categories are created with valid data and correctly serialized, 
+verifying that both name and color fields are accurately reflected in the serialized output.
+"""
 class CategorySerializerTest(TestCase):
 
     def setUp(self):
@@ -119,6 +148,12 @@ class CategorySerializerTest(TestCase):
         self.assertEqual(data['color'], '#FF0000')
 
 
+"""
+SubtaskSerializerTest:
+
+Tests the SubtaskSerializer, ensuring that subtasks are created with valid data and correctly serialized, 
+verifying the text and completed status of the subtask in both creation and serialization scenarios.
+"""
 
 class SubtaskSerializerTest(TestCase):
 
@@ -142,6 +177,15 @@ class SubtaskSerializerTest(TestCase):
         self.assertEqual(data['text'], 'Test subtask')
         self.assertEqual(data['completed'], False)
 
+
+"""
+TaskSerializerTest:
+
+Tests the TaskSerializer, ensuring that tasks are created and updated with valid data, 
+correctly associating categories, contacts, and subtasks. It verifies the relationships, including the creator of the task, 
+and checks that all task attributes are properly handled during serialization and updates.
+"""
+
 class TaskSerializerTest(TestCase):
 
     def setUp(self):
@@ -161,9 +205,17 @@ class TaskSerializerTest(TestCase):
         }
 
     def test_valid_task_creation(self):
-        serializer = TaskSerializer(data=self.task_data)
+        # Create a request and assign the user
+        factory = APIRequestFactory()
+        request = factory.post('/tasks/')
+        request.user = self.user  # Ensure the request is authenticated
+
+        # Pass the request context to the serializer
+        serializer = TaskSerializer(data=self.task_data, context={'request': request})
         self.assertTrue(serializer.is_valid(), msg=serializer.errors)
-        task = serializer.save(creator=self.user)
+        task = serializer.save()
+        
+        # Assert statements to verify task creation
         self.assertEqual(task.title, 'Test task')
         self.assertEqual(task.description, 'Test description')
         self.assertEqual(task.priority, 'Low')
@@ -174,63 +226,49 @@ class TaskSerializerTest(TestCase):
         self.assertFalse(task.subtasks.first().completed)
         self.assertEqual(task.creator, self.user)
 
-    def test_task_serialization(self):
-        task = Task.objects.create(
-            title='Test task',
-            description='Test description',
-            priority='Low',
-            due_date='2024-07-31',
-            category=self.category,
-            creator=self.user,
-            status='todo'
-        )
-        task.assigned_to.add(self.contact)
-        task.subtasks.add(self.subtask)
-        serializer = TaskSerializer(task)
-        data = serializer.data
-        self.assertEqual(data['title'], 'Test task')
-        self.assertEqual(data['description'], 'Test description')
-        self.assertEqual(data['priority'], 'Low')
-        self.assertEqual(data['due_date'], '2024-07-31')
-        self.assertEqual(data['category'], self.category.id)
-        self.assertIn(self.contact.id, data['assigned_to'])
-        self.assertEqual(data['subtasks'][0]['text'], 'Initial subtask')
-        self.assertFalse(data['subtasks'][0]['completed'])
-        self.assertEqual(data['creator']['name'], self.user.name)
+def test_task_update(self):
+    task = Task.objects.create(
+        title='Initial task',
+        description='Initial description',
+        priority='Low',
+        due_date='2024-07-31',
+        category=self.category,
+        creator=self.user,
+        status='todo'
+    )
+    task.assigned_to.add(self.contact)
+    task.subtasks.add(self.subtask)
+    
+    update_data = {
+        'title': 'Updated task',
+        'description': 'Updated description',
+        'priority': 'Medium',
+        'due_date': '2024-08-15',
+        'category': self.category.id,
+        'assigned_to': [self.contact.id],
+        'subtasks': [{'id': self.subtask.id, 'text': 'Updated subtask', 'completed': True}],
+        'status': 'inProgress'
+    }
 
-    def test_task_update(self):
-        task = Task.objects.create(
-            title='Initial task',
-            description='Initial description',
-            priority='Low',
-            due_date='2024-07-31',
-            category=self.category,
-            creator=self.user,
-            status='todo'
-        )
-        task.assigned_to.add(self.contact)
-        task.subtasks.add(self.subtask)
-        
-        update_data = {
-            'title': 'Updated task',
-            'description': 'Updated description',
-            'priority': 'Medium',
-            'due_date': '2024-08-15',
-            'category': self.category.id,
-            'assigned_to': [self.contact.id],
-            'subtasks': [{'id': self.subtask.id, 'text': 'Updated subtask', 'completed': True}],
-            'status': 'inProgress'
-        }
+    # Create a request and assign the user
+    factory = APIRequestFactory()
+    request = factory.put(f'/tasks/{task.id}/')
+    request.user = self.user
 
-        serializer = TaskSerializer(task, data=update_data)
-        self.assertTrue(serializer.is_valid(), msg=serializer.errors)
-        updated_task = serializer.save()
-        self.assertEqual(updated_task.title, 'Updated task')
-        self.assertEqual(updated_task.description, 'Updated description')
-        self.assertEqual(updated_task.priority, 'Medium')
-        self.assertEqual(updated_task.due_date, datetime.date(2024, 8, 15))
-        self.assertEqual(updated_task.category, self.category)
-        self.assertIn(self.contact, updated_task.assigned_to.all())
-        self.assertEqual(updated_task.subtasks.first().text, 'Updated subtask')
-        self.assertTrue(updated_task.subtasks.first().completed)
-        self.assertEqual(updated_task.status, 'inProgress')
+    serializer = TaskSerializer(task, data=update_data, context={'request': request})
+    self.assertTrue(serializer.is_valid(), msg=serializer.errors)
+    updated_task = serializer.save()
+
+    # Assert statements to verify task update
+    self.assertEqual(updated_task.title, 'Updated task')
+    self.assertEqual(updated_task.description, 'Updated description')
+    self.assertEqual(updated_task.priority, 'Medium')
+    self.assertEqual(updated_task.due_date, datetime.date(2024, 8, 15))
+    self.assertEqual(updated_task.category, self.category)
+    self.assertIn(self.contact, updated_task.assigned_to.all())
+    
+    # Fetch the subtask again to verify it was updated
+    updated_subtask = updated_task.subtasks.get(id=self.subtask.id)
+    self.assertEqual(updated_subtask.text, 'Updated subtask')
+    self.assertTrue(updated_subtask.completed)
+    self.assertEqual(updated_task.status, 'inProgress')

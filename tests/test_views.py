@@ -12,12 +12,15 @@ from join_backend.models import Contact
 from join_backend.models import Category
 from join_backend.models import Task, Subtask, Category, Contact, CustomUser
 
-
-
-
-
-
 User = get_user_model()
+
+"""
+LoginViewTest:
+
+Tests the LoginView, focusing on successful login with valid credentials, 
+failure with invalid credentials, and handling of missing fields in the login request.
+"""
+
 
 class LoginViewTest(TestCase):
     def setUp(self):
@@ -64,6 +67,13 @@ class LoginViewTest(TestCase):
         self.assertIn('error', response.data)
 
 
+"""
+UserRegistrationViewTest:
+
+Tests the UserRegistrationView, ensuring that a new user can be successfully registered 
+and that appropriate validation errors are raised for invalid or incomplete registration data.
+"""
+
 class UserRegistrationViewTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -84,6 +94,12 @@ class UserRegistrationViewTest(APITestCase):
         self.assertTrue(User.objects.filter(email='newuser@example.com').exists())
 
 
+"""
+UserDetailsViewTest:
+
+Tests the UserDetailsView, verifying that an authenticated user can retrieve their own details, 
+and checks the response for accuracy and correct status codes.
+"""
 
 class UserDetailsViewTest(APITestCase):
     def setUp(self):
@@ -106,6 +122,13 @@ class UserDetailsViewTest(APITestCase):
         self.assertEqual(response.data['name'], 'Test User')
 
 
+"""
+ContactCreateViewTest:
+
+Tests the ContactCreateView, ensuring that a logged-in user can successfully create a new contact 
+and that the contact is correctly saved to the database.
+"""
+
 
 class ContactCreateViewTest(TestCase):
     def setUp(self):
@@ -126,7 +149,12 @@ class ContactCreateViewTest(TestCase):
         self.assertTrue(Contact.objects.filter(name='Test Contact').exists())
 
 
+"""
+ContactListCreateViewTest:
 
+Tests the ContactListCreateView, verifying that a user can retrieve a list of their contacts and create new contacts. 
+It ensures that only the authenticated user's contacts are returned and that new contacts are properly associated with the user.
+"""
 
 class ContactListCreateViewTest(APITestCase):
     def setUp(self):
@@ -155,6 +183,12 @@ class ContactListCreateViewTest(APITestCase):
         self.assertTrue(Contact.objects.filter(name='New Contact').exists())
 
 
+"""
+ContactDetailViewTest:
+
+Tests the ContactDetailView, covering the retrieval, update, and deletion of specific contacts. 
+It ensures that these operations work as expected and return the correct status codes and data.
+"""
 
 class ContactDetailViewTest(APITestCase):
     def setUp(self):
@@ -190,6 +224,13 @@ class ContactDetailViewTest(APITestCase):
         self.assertFalse(Contact.objects.filter(id=self.contact.id).exists())
 
 
+"""
+CategoryListCreateAPIViewTest:
+
+Tests the CategoryListCreateAPIView, focusing on the retrieval of all categories and the creation of new categories, 
+ensuring that the operations return the correct responses and status codes.
+"""
+
 
 class CategoryListCreateAPIViewTest(APITestCase):
     def setUp(self):
@@ -209,6 +250,13 @@ class CategoryListCreateAPIViewTest(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Category.objects.filter(name='New Category').exists())
 
+
+"""
+CategoryDetailAPIViewTest:
+
+Tests the CategoryDetailAPIView, covering the retrieval, update, and deletion of specific categories by their ID. 
+It ensures that these operations handle the data correctly and return appropriate status codes.
+"""
 
 class CategoryDetailAPIViewTest(APITestCase):
     def setUp(self):
@@ -234,6 +282,12 @@ class CategoryDetailAPIViewTest(APITestCase):
         self.assertFalse(Category.objects.filter(pk=self.category.pk).exists())
 
 
+"""
+SubtaskListCreateAPIViewTest:
+
+Tests the SubtaskListCreateAPIView, verifying that subtasks can be listed and created. 
+It ensures that the correct status codes and data are returned for these operations.
+"""
 
 class SubtaskListCreateAPIViewTest(APITestCase):
     def setUp(self):
@@ -253,6 +307,13 @@ class SubtaskListCreateAPIViewTest(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Subtask.objects.filter(text='New Subtask').exists())
 
+
+"""
+SubtaskDetailAPIViewTest:
+
+Tests the SubtaskDetailAPIView, covering the retrieval, update, and deletion of specific subtasks. 
+It ensures that these operations are handled correctly and return appropriate status codes.
+"""
 
 class SubtaskDetailAPIViewTest(APITestCase):
     def setUp(self):
@@ -278,29 +339,65 @@ class SubtaskDetailAPIViewTest(APITestCase):
         self.assertFalse(Subtask.objects.filter(pk=self.subtask.pk).exists()) 
 
 
+"""
+TaskListCreateAPIViewTest:
+
+Tests the TaskListCreateAPIView, focusing on the creation of tasks by an authenticated user. 
+It verifies that the task is correctly saved to the database and associated with the user.
+"""
+
 class TaskListCreateAPIViewTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        self.url = reverse('task-list')
-        self.user = CustomUser.objects.create_user(email='testuser@example.com', name='Test User', password='testpassword')
+        self.user = CustomUser.objects.create_user(
+            email='testuser@example.com', 
+            name='Test User', 
+            password='testpassword'
+        )
+        # Authenticate the client with the created user
+        self.client.force_authenticate(user=self.user)
+        self.url = reverse('task-list')  # Ensure this is the correct URL name for your view
 
     def test_task_create(self):
-        data = {'title': 'New Task', 'description': 'New Description', 'priority': 'Medium', 'creator': self.user.id}
+        data = {
+            'title': 'New Task',
+            'description': 'New Description',
+            'priority': 'Medium',
+            'creator': self.user.id  # The creator should be automatically assigned in the view, not passed in the data
+        }
         response = self.client.post(self.url, data, format='json')
-        
+
         # Print the response data for debugging
         print("Response data:", response.data)
-        
+
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Task.objects.filter(title='New Task').exists())
 
+
+"""
+TaskDetailAPIViewTest:
+
+Tests the TaskDetailAPIView, covering the retrieval, update, and deletion of specific tasks by their ID. 
+It ensures that these operations return the correct data and status codes, 
+and that tasks are correctly updated or deleted.
+"""
 
 
 class TaskDetailAPIViewTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = CustomUser.objects.create_user(email='testuser@example.com', name='Test User', password='testpassword')
-        self.task = Task.objects.create(title='Task 1', description='Description 1', creator=self.user, priority='High')
+        self.user = CustomUser.objects.create_user(
+            email='testuser@example.com', 
+            name='Test User', 
+            password='testpassword'
+        )
+        self.client.force_authenticate(user=self.user)
+        self.task = Task.objects.create(
+            title='Task 1', 
+            description='Description 1', 
+            creator=self.user, 
+            priority='High'
+        )
         self.url = reverse('task-detail', kwargs={'pk': self.task.pk})
 
     def test_task_retrieve(self):
@@ -309,7 +406,11 @@ class TaskDetailAPIViewTest(APITestCase):
         self.assertEqual(response.data['title'], 'Task 1')
 
     def test_task_update(self):
-        data = {'title': 'Updated Task', 'description': 'Updated Description', 'priority': 'Medium'}
+        data = {
+            'title': 'Updated Task', 
+            'description': 'Updated Description', 
+            'priority': 'Medium'
+        }
         response = self.client.put(self.url, data, format='json')
         self.assertEqual(response.status_code, 200)
         self.task.refresh_from_db()

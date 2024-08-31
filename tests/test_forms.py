@@ -3,6 +3,13 @@ from django.test import TestCase
 from join_backend.forms import ContactForm
 from join_backend.models import Contact
 
+"""
+ContactFormTest:
+
+A test case class that verifies the validity of the ContactForm under different conditions, 
+ensuring that the form behaves as expected when given valid or invalid input.
+"""
+
 class ContactFormTest(TestCase):
 
     def test_valid_contact_form(self):

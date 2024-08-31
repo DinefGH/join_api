@@ -6,7 +6,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 
+"""
+ContactAdmin:
 
+Manages the display, filtering, and searching of Contact records in the admin interface. 
+Allows admins to view and manage contacts based on user and other criteria.
+"""
 
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone', 'color', 'user', 'id')  # Columns to display in the admin list view
@@ -16,6 +21,14 @@ class ContactAdmin(admin.ModelAdmin):
     raw_id_fields = ('user',)  # Use a lookup widget for user field
 
 admin.site.register(Contact, ContactAdmin)
+
+
+"""
+CustomUserAdmin:
+
+Configures the admin interface for managing CustomUser records, including displaying key user details, 
+managing permissions, and controlling the registration and search functionalities.
+"""
 
 class CustomUserAdmin(admin.ModelAdmin):
     model = CustomUser
@@ -38,6 +51,15 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 
+
+
+"""
+CategoryAdmin:
+
+Handles the display and search capabilities for Category records in the admin interface, 
+with filters available for color and name.
+"""
+
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'color')  # Fields to be displayed in the admin list view
     search_fields = ('name',)  # Fields to search by in the admin
@@ -47,10 +69,24 @@ class CategoryAdmin(admin.ModelAdmin):
 admin.site.register(Category, CategoryAdmin)
 
 
+"""
+SubtaskInline:
+
+Defines an inline admin interface for managing Subtasks directly within the Task editing interface, 
+facilitating the addition of multiple subtasks.
+"""
 
 class SubtaskInline(admin.TabularInline):
     model = Subtask
     extra = 1
+
+
+"""
+TaskAdmin:
+
+Manages the Task records in the admin interface, providing options to filter, 
+search, and order tasks by priority, due date, and other key attributes.
+"""
 
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('title', 'priority', 'due_date', 'category', 'creator', 'status')
@@ -59,6 +95,12 @@ class TaskAdmin(admin.ModelAdmin):
 
 admin.site.register(Task, TaskAdmin)
 
+"""
+SubtaskAdmin:
+
+Configures the display and filtering options for Subtasks in the admin interface, 
+allowing for efficient management of subtask completion status and details.
+"""
 
 class SubtaskAdmin(admin.ModelAdmin):
     list_display = ['text', 'completed', 'id']  # Adjust fields to display as needed

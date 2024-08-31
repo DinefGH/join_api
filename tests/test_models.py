@@ -6,7 +6,13 @@ from join_backend.models import Task
 from join_backend.models import Subtask
 from datetime import date
 
-# Create your tests here.
+"""
+CustomUserModelTest:
+
+Tests the CustomUser model, focusing on the creation of regular users and superusers, 
+verifying their attributes such as email, password, and permissions, and ensuring the correct string representation.
+"""
+
 class CustomUserModelTest(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
@@ -34,6 +40,13 @@ class CustomUserModelTest(TestCase):
         self.assertEqual(str(superuser), "superuser@example.com")
 
 
+"""
+CustomUserManagerTest:
+
+Tests the CustomUserManager, specifically the methods for creating users and superusers. 
+It verifies that users are created with the correct attributes 
+and checks that appropriate exceptions are raised when required fields are missing or invalid.
+"""
 
 class CustomUserManagerTest(TestCase):
     def setUp(self):
@@ -89,6 +102,14 @@ class CustomUserManagerTest(TestCase):
         self.assertEqual(str(cm.exception), 'Superuser must have is_superuser=True.')
 
 
+"""
+CustomUserManagerTest:
+
+Tests the CustomUserManager, specifically the methods for creating users and superusers. 
+It verifies that users are created with the correct attributes 
+and checks that appropriate exceptions are raised when required fields are missing or invalid.
+"""
+
 class CustomUserManagerTest(TestCase):
     def setUp(self):
         self.user_manager = CustomUser.objects
@@ -121,6 +142,15 @@ class CustomUserManagerTest(TestCase):
                 is_superuser=False
             )
 
+
+"""
+ontactModelTest:
+
+Tests the Contact model, ensuring that contacts are correctly created with the associated user, 
+and verifying their attributes such as name, email, phone, and color.
+It also checks the correct string representation of a contact.
+"""
+
 class ContactModelTest(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
@@ -144,6 +174,13 @@ class ContactModelTest(TestCase):
         self.assertEqual(str(self.contact), "Test Contact")
 
 
+"""
+CategoryModelTest:
+
+Tests the Category model, verifying that categories are correctly created with the specified name and color, 
+and checks the string representation of a category.
+"""
+
 class CategoryModelTest(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
@@ -156,6 +193,14 @@ class CategoryModelTest(TestCase):
         self.assertEqual(self.category.color, "#123456")
         self.assertEqual(str(self.category), "Test Category")
 
+
+"""
+TaskModelTest:
+
+Tests the Task model, ensuring that tasks are correctly created with all associated attributes such as title, description, 
+priority, due date, category, and creator. 
+It also verifies the relationships with contacts and ensures the correct string representation of a task.
+"""
 
 class TaskModelTest(TestCase):
     def setUp(self):
@@ -197,6 +242,13 @@ class TaskModelTest(TestCase):
         self.assertIn(self.contact, self.task.assigned_to.all())
         self.assertEqual(str(self.task), "Test Task")
 
+
+"""
+SubtaskModelTest:
+
+Tests the Subtask model, verifying that subtasks are correctly created with the specified text and completion status. 
+It also checks the string representation of a subtask.
+"""
 
 class SubtaskModelTest(TestCase):
     def setUp(self):
